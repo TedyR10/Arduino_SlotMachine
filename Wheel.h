@@ -9,6 +9,9 @@
 #define SEVEN 5
 #define DOLLAR 6
 #define INVSEVEN 11
+#define P 25
+#define M 26
+#define HEART 3
 
 #ifdef REELS_IN_FLASH
 const byte reel[] PROGMEM =
@@ -240,7 +243,24 @@ const byte reel[] =
   B01111110,
   B00111100,
   B00011000,
- 
+																		   // 25	P     
+  B01111100,
+  B01000010,
+  B01000010,
+  B01000010,
+  B01111100,
+  B01100000,
+  B01100000,
+  B01100000,
+ 																		   // 26	M     
+  B01000010,
+  B01100110,
+  B01011010,
+  B01000010,
+  B01000010,
+  B01000010,
+  B01000010,
+  B01000010,
 
 };
 

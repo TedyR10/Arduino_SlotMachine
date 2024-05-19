@@ -11,7 +11,6 @@
 
 #define DIGITS 3  //Number of MAX7219
 #define WHEELS 3  //Number of wheels on machine
-#define MONEY 0   //Location of 8 Digit 7 Segment display in MAX7219 daisy chain
 
 // - MAX7219 Dot Matrix Module
 #define DIGIT(a) (a)
@@ -32,17 +31,6 @@
 // Buzzer
 #define TONE_PIN 3
 
-// LEDs
-#define LEDB	2
-#define LEDG	5
-#define LEDR	6
-#define LEDY	4
-
-LED ledB(LEDB);
-LED ledG(LEDG);
-LED ledR(LEDR);
-LED ledY(LEDY);
-
 #define BUZZER_DDR  DDRD                                      
 #define BUZZER_PORT PORTD
 #define BUZZER_PIN  DDD3
@@ -55,15 +43,12 @@ TM1637Display display = TM1637Display(S_CLK, S_DIO);
 
 #define BRIGHTNESS 2  //0 to 15
 
-
 //Close Encounters
 #define NUM_NOTES 5
-const int closeEncounters[] PROGMEM = {                             // notes in the melody:
+const int closeEncounters[] = {                             // notes in the melody:
     NOTE_A2, NOTE_B2, NOTE_G2, NOTE_G1, NOTE_D2                     // "Close Encounters" tones
 };
   
-
-
 //- Payout Table
 /*  Probabilities based on a 1 credit wager
     Three spaceships:     1 / (25 * 25 * 25)    = 0.000064
@@ -82,7 +67,6 @@ const int closeEncounters[] PROGMEM = {                             // notes in 
 #define TWO_SEVENS_PAYOUT    50 //    0.004608            0.00468740
 #define ONE_SEVEN_PAYOUT     3 //    0.110592            0.11064389
 #define TWO_SYMBOL_PAYOUT        2 //    0.105984            0.10575249
-
 
 /* Timing constants that control how the reels spin */
 #define START_DELAY_TIME 10
@@ -129,10 +113,8 @@ unsigned long payout;
 double owedExcess = 0;
 int wager = MINIMUM_WAGER;
 
-const uint8_t allON[] = {0xff, 0xff, 0xff, 0xff};
-
 //--------------------------------------------------------------------------------------------
-//Setup LCD and the spin array.
+
 void setup() 
 {
   #ifdef DEBUG
@@ -145,11 +127,6 @@ void setup()
 
   //Set up a random seed 
   randomSeed(analogRead(A0));
-
-  ledB.begin(1000);
-  ledG.begin(1000);
-  ledR.begin(1000);
-  ledY.begin(1000);
 
   display.setBrightness(5);
 
@@ -171,6 +148,7 @@ void setup()
     }
   }
 
+  //Show credit balance
   display.showNumberDec(STARTING_CREDIT_BALANCE);
 
   //Play splash screen
@@ -182,6 +160,7 @@ void setup()
     displayWheelSymbol(i);
   }
 
+  //Scroll display
   for (uint8_t i = 0; i < 16; i++) {
     lcd.scrollDisplayLeft();
     delay(50);
@@ -240,10 +219,6 @@ void loop()
   adjustCreditBalance(creditBalance + roundWinnings);
   displayWager();
   beepDigit();
-
-  
-  // delay(PAUSE_TIME / 2);
-
 }
 
 //--------------------------------------------------------------------------------------------
@@ -302,36 +277,6 @@ void spinTheWheels()
     yield();
   }
 }
-
-//--------------------------------------------------------------------------------------------
-
-// Flash LEDs function
-void flashLEDs(uint8_t multiplier) {
-  for (uint8_t i = 0; i < 100 * multiplier; i++) {
-    // Randomly flash LEDs
-    if (random(0, 100) < 50) {  // Adjust probability as needed
-      // Serial.println("Flashing blue");
-      ledB.flash(0, 1000); // Flash blue LED
-    }
-    if (random(0, 100) < 50) {
-      // Serial.println("Flashing green");
-      ledG.flash(0, 1000);  // Flash green LED
-    }
-    if (random(0, 100) < 50) {
-      // Serial.println("Flashing red");
-      ledR.flash(0, 1000);  // Flash red LED
-    }
-    if (random(0, 100) < 50) {
-      // Serial.println("Flashing yellow");
-      ledY.flash(0, 1000);  // Flash yellow LED
-    }
-  }
-  ledB.off();
-  ledG.off();
-  ledR.off();
-  ledY.off();
-}
-
 
 //--------------------------------------------------------------------------------------------
 
@@ -475,18 +420,19 @@ void playSplashScreen()
   //Show aliens walking
   for (uint8_t k = 0; k < 1; k++)
   {
-    for (uint8_t j = 0; j < WHEELS; j++)
+    for (int8_t i = 7; i >= 0; i--)
     {
-      for (int8_t i = 7; i >= 0; i--)
-      {
-        lc.setRow(DIGIT(j), i, getReelRow((ALIEN_1 << 3) + i));
-      }
-      delay(250);
-      for (int8_t i = 7; i >= 0; i--)
-      {
-        lc.setRow(DIGIT(j), i, getReelRow((ALIEN_2 << 3) + i));
-      }
-      delay(250);
+      lc.setRow(DIGIT(0), i, getReelRow((P << 3) + i));
+    }
+    delay(250);
+    for (int8_t i = 7; i >= 0; i--)
+    {
+      lc.setRow(DIGIT(1), i, getReelRow((M << 3) + i));
+    }
+    delay(250);
+    for (int8_t i = 7; i >= 0; i--)
+    {
+      lc.setRow(DIGIT(2), i, getReelRow((HEART << 3) + i));
     }
     playMelody();
   }
@@ -502,7 +448,7 @@ void playSplashScreen()
       {
         for (uint8_t r = 0; r < 8; r++)
         {
-          lc.setLed(DIGIT((pc >> 3)), r, pc & 0x07, getReelRow((SPACESHIP << 3) + r) & (1 << c));
+          lc.setLed(DIGIT((pc >> 3)), r, pc & 0x07, getReelRow((HEART << 3) + r) & (1 << c));
         }
       }
       //Clear last column
@@ -523,11 +469,7 @@ void playSplashScreen()
 //Read a row from the reels either from FLASH memory or RAM
 uint8_t getReelRow(uint8_t row)
 {
-  #ifdef REELS_IN_FLASH
-    return pgm_read_byte(reel + row);
-  #else
-    return reel[row];
-  #endif
+  return reel[row];
 }
 
 //-----------------------------------------------------------------------------------
@@ -560,6 +502,8 @@ void doubleSuccessSound() {
     TimerFreeTone(TONE_PIN, NOTE_G4, 150);
     delay(200);
 }
+
+//-----------------------------------------------------------------------------------
 
 void doubleFailSound() {
     TimerFreeTone(TONE_PIN, NOTE_C4, 300);
@@ -603,7 +547,7 @@ void playMelody()
     // to calculate the note duration, take one second divided by the note type.
     //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
     int noteDuration = 500;
-    TimerFreeTone(TONE_PIN, pgm_read_byte(closeEncounters + thisNote) * 3, noteDuration); 
+    TimerFreeTone(TONE_PIN, closeEncounters[thisNote] * 3, noteDuration); 
     delay(100);
   }
 }
@@ -649,10 +593,6 @@ void displayWager()
   lcd.clear();
   lcd.print("Current wager:");
   lcd.setCursor(0, 1);
-  if (negative)
-  {
-    lcd.print('-'); // Print the negative sign if the number is negative
-  }
   lcd.print(numberString); // Print the number string to the LCD
 }
 
