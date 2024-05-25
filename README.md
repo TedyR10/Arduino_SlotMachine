@@ -1,7 +1,3 @@
-Sure, here is a detailed README file for your Arduino Slot Machine project:
-
----
-
 **Name: Theodor-Ioan Rolea**
 
 **Group: 333CA**
