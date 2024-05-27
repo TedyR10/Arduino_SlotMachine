@@ -9,7 +9,7 @@ This project implements a Slot Machine using an Arduino microcontroller. The slo
 
 ***
 
-## Pacanistul Suprem: [Valentin-Ioan Vintila](https://github.com/w1bb) $3050 Jackpot
+## Păcănistul Suprem: [Valentin-Ioan Vintila](https://github.com/w1bb) $3050 Jackpot
 
 ***
 
